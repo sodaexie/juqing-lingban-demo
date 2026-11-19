@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="腾讯 AI 产培两小时产品实战：进度感知型剧情助手评测与灰度方案。">
+  <title>评测与灰度方案 V1｜剧情灵伴</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --ink-2: #40506a;
+      --ink-3: #6b7890;
+      --paper: #ffffff;
+      --canvas: #f3f6fa;
+      --line: #dce3ec;
+      --line-strong: #c9d3e0;
+      --blue: #1769e0;
+      --blue-deep: #0c4fb7;
+      --blue-soft: #edf5ff;
+      --green: #087f5b;
+      --green-soft: #eaf8f2;
+      --amber: #9a5b00;
+      --amber-soft: #fff6e5;
+      --red: #b22d36;
+      --red-soft: #fff0f1;
+      --violet: #6f42c1;
+      --violet-soft: #f3efff;
+      --radius: 16px;
+      --shadow: 0 20px 60px rgba(43, 57, 76, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 28px;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 90% 2%, rgba(23, 105, 224, 0.08), transparent 25rem),
+        var(--canvas);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      z-index: 50;
+      padding: 8px 12px;
+      color: #fff;
+      background: var(--blue-deep);
+      border-radius: 8px;
+      transform: translateY(-160%);
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 940px);
+      justify-content: center;
+      align-items: start;
+      gap: 28px;
+      padding: 28px 24px 72px;
+    }
+
+    .toc {
+      position: sticky;
+      top: 24px;
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      padding: 18px 16px;
+      color: var(--ink-3);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+    }
+
+    .toc a {
+      display: block;
+      padding: 5px 0;
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible {
+      color: var(--blue);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .document {
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(201, 211, 224, 0.7);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .cover {
+      position: relative;
+      overflow: hidden;
+      padding: 66px 64px 48px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 330px;
+      height: 330px;
+      border: 72px solid var(--blue-soft);
+      border-radius: 50%;
+      opacity: 0.9;
+    }
+
+    .cover::after {
+      content: "";
+      position: absolute;
+      right: 74px;
+      bottom: -84px;
+      width: 185px;
+      height: 185px;
+      border: 34px solid var(--green-soft);
+      border-radius: 50%;
+    }
+
+    .cover > * { position: relative; z-index: 1; }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(40px, 5vw, 60px);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    .cover-lead {
+      max-width: 690px;
+      margin: 22px 0 0;
+      color: var(--ink-2);
+      font-size: 19px;
+      line-height: 1.68;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 26px;
+    }
+
+    .meta span {
+      padding: 6px 11px;
+      color: var(--ink-2);
+      background: #f3f6fa;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .meta .status {
+      color: var(--amber);
+      background: var(--amber-soft);
+      border-color: #f2d7a2;
+      font-weight: 700;
+    }
+
+    .content { padding: 6px 64px 60px; }
+
+    section {
+      padding: 34px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child { border-bottom: 0; }
+
+    h2 {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 0 0 18px;
+      font-size: 25px;
+      line-height: 1.3;
+      letter-spacing: -0.025em;
+    }
+
+    h2 .num {
+      flex: none;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+    }
+
+    h3 {
+      margin: 24px 0 9px;
+      font-size: 18px;
+      line-height: 1.42;
+    }
+
+    p { margin: 10px 0; }
+
+    ul,
+    ol {
+      margin: 10px 0;
+      padding-left: 1.25em;
+    }
+
+    li { margin: 6px 0; }
+
+    strong { font-weight: 730; }
+
+    .hero-statement {
+      margin: 20px 0 0;
+      padding: 22px 24px;
+      border: 1px solid #bed5f5;
+      border-left: 4px solid var(--blue);
+      border-radius: 14px;
+      background: var(--blue-soft);
+      font-size: 19px;
+      line-height: 1.6;
+    }
+
+    .logic-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .logic-card {
+      position: relative;
+      min-height: 154px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .logic-card:not(:last-child)::after {
+      content: "×";
+      position: absolute;
+      top: 50%;
+      right: -21px;
+      z-index: 2;
+      width: 26px;
+      color: var(--ink-3);
+      background: #fff;
+      text-align: center;
+      font-size: 20px;
+      transform: translateY(-50%);
+    }
+
+    .logic-card small {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .logic-card strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .logic-card p {
+      margin: 8px 0 0;
+      color: var(--ink-3);
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .scope-grid,
+    .value-grid,
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .scope-card,
+    .value-card,
+    .decision-card {
+      padding: 18px 19px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .scope-card.in { background: var(--green-soft); border-color: #bde7d7; }
+    .scope-card.out { background: #f7f8fa; }
+
+    .scope-card h3,
+    .value-card h3,
+    .decision-card h3 { margin-top: 0; }
+
+    .scope-card ul { margin-bottom: 0; }
+
+    .three-layer {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .layer {
+      position: relative;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .layer b {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 14px;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .layer strong { display: block; font-size: 17px; }
+    .layer p { margin: 7px 0 0; color: var(--ink-3); font-size: 14px; }
+
+    .table-wrap {
+      margin-top: 16px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--ink-2);
+      background: #f6f8fb;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.035em;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcff; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .badge.must { color: var(--red); background: var(--red-soft); }
+    .badge.target { color: var(--green); background: var(--green-soft); }
+    .badge.proxy { color: var(--violet); background: var(--violet-soft); }
+
+    .formula {
+      margin: 18px 0;
+      padding: 22px;
+      color: #f7fbff;
+      background: #13243d;
+      border-radius: 15px;
+    }
+
+    .formula small {
+      display: block;
+      margin-bottom: 8px;
+      color: #9eb8dc;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+    }
+
+    .formula strong {
+      display: block;
+      font-size: 19px;
+      line-height: 1.55;
+    }
+
+    .formula p { margin: 9px 0 0; color: #c8d6e9; font-size: 13px; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+
+    .metric strong { display: block; font-size: 15px; }
+    .metric span { display: block; margin-top: 5px; color: var(--ink-3); font-size: 12px; line-height: 1.5; }
+
+    .funnel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f9fbfd;
+    }
+
+    .funnel span {
+      padding: 7px 10px;
+      color: var(--ink-2);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .funnel i {
+      color: var(--ink-3);
+      font-style: normal;
+      font-size: 13px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr) 150px;
+      gap: 18px;
+      align-items: start;
+      padding: 17px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .step .stage {
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .step p { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+    .step .gate {
+      padding-left: 14px;
+      color: var(--ink-3);
+      border-left: 1px solid var(--line);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .decision-card.go { background: var(--green-soft); border-color: #bde7d7; }
+    .decision-card.hold { background: var(--amber-soft); border-color: #f0d59f; }
+    .decision-card.stop { grid-column: 1 / -1; background: var(--red-soft); border-color: #f0bdc1; }
+
+    .risk-note,
+    .evidence-note {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .risk-note { color: #7a4300; background: var(--amber-soft); border: 1px solid #efd29b; }
+    .evidence-note { color: var(--ink-2); background: #f6f8fb; border: 1px solid var(--line); }
+
+    .demo-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 17px;
+    }
+
+    .demo-item {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .demo-item b {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-radius: 9px;
+      font-size: 13px;
+    }
+
+    .demo-item p { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; }
+
+    .footer {
+      padding: 26px 64px 32px;
+      color: var(--ink-3);
+      background: #f7f9fc;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: minmax(0, 860px); }
+      .toc { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      body { background: #fff; }
+      .shell { display: block; padding: 0; }
+      .document { border: 0; border-radius: 0; box-shadow: none; }
+      .cover { padding: 46px 24px 32px; }
+      .content { padding: 4px 24px 40px; }
+      .footer { padding: 22px 24px 28px; }
+      h1 { font-size: 40px; }
+      .cover-lead { font-size: 17px; }
+      .logic-grid,
+      .three-layer,
+      .scope-grid,
+      .value-grid,
+      .decision-grid,
+      .metric-grid { grid-template-columns: 1fr; }
+      .logic-card:not(:last-child)::after { display: none; }
+      .step { grid-template-columns: 1fr; gap: 7px; }
+      .step .gate { padding: 8px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+      .decision-card.stop { grid-column: auto; }
+      .table-wrap { border: 0; overflow: visible; }
+      table, thead, tbody, tr, th, td { display: block; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      tr { margin-bottom: 12px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+      td { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; border-bottom: 1px solid var(--line); }
+      td::before { content: attr(data-label); color: var(--ink-3); font-size: 12px; font-weight: 750; }
+      tr:last-child td { border-bottom: 1px solid var(--line); }
+      tr td:last-child { border-bottom: 0; }
+    }
+
+    @media (max-width: 420px) {
+      .cover { padding: 40px 18px 28px; }
+      .content { padding: 2px 18px 34px; }
+      .footer { padding: 20px 18px 26px; }
+      h1 { font-size: 35px; }
+      h2 { font-size: 22px; }
+      td { grid-template-columns: 96px minmax(0, 1fr); padding: 12px; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 14mm; }
+      body { background: #fff; font-size: 10.5pt; }
+      .shell { display: block; padding: 0; }
+      .toc { display: none; }
+      .document { border: 0; border-radius: 0; box-shadow: none; }
+      .cover { padding: 28px 0 24px; }
+      .cover::before,
+      .cover::after { display: none; }
+      .content { padding: 0; }
+      .footer { padding: 18px 0 0; background: #fff; }
+      section { padding: 22px 0; }
+      h1 { font-size: 34pt; }
+      h2, h3, .formula, .logic-card, .layer, .scope-card, .metric, .step, .decision-card { break-inside: avoid; }
+      .table-wrap { overflow: visible; }
+      table { font-size: 8.5pt; }
+      th, td { padding: 8px; }
+    }
+  </style>
+  <style>
+    /* 简洁文档模式：接近飞书文档的阅读体验 */
+    :root {
+      --ink: #1f2329;
+      --ink-2: #4e5969;
+      --ink-3: #8f959e;
+      --paper: #ffffff;
+      --canvas: #ffffff;
+      --line: #e5e6eb;
+      --line-strong: #d0d3d8;
+      --blue: #3370ff;
+      --blue-deep: #245bdb;
+      --blue-soft: #f2f6ff;
+      --green: #2b7a55;
+      --green-soft: #f2f8f5;
+      --amber: #8a5a14;
+      --amber-soft: #fff8eb;
+      --red: #b33a3a;
+      --red-soft: #fff4f4;
+      --violet: #5f55a5;
+      --violet-soft: #f6f4ff;
+      --radius: 4px;
+      --shadow: none;
+    }
+
+    html { scroll-padding-top: 24px; }
+
+    body {
+      background: #fff;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .shell {
+      grid-template-columns: 176px minmax(0, 760px);
+      gap: 40px;
+      padding: 36px 28px 72px;
+    }
+
+    .toc {
+      top: 32px;
+      max-height: calc(100vh - 64px);
+      padding: 4px 0 4px 16px;
+      background: #fff;
+      border: 0;
+      border-left: 1px solid var(--line);
+      border-radius: 0;
+      backdrop-filter: none;
+    }
+
+    .toc strong {
+      margin-bottom: 8px;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .toc a {
+      padding: 4px 0;
+      font-size: 12px;
+    }
+
+    .document {
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .cover {
+      padding: 18px 0 32px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cover::before,
+    .cover::after { display: none; }
+
+    .eyebrow {
+      margin-bottom: 10px;
+      color: var(--ink-3);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      font-size: 36px;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    .cover-lead {
+      max-width: none;
+      margin-top: 14px;
+      color: var(--ink-2);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .meta {
+      gap: 0;
+      margin-top: 18px;
+      color: var(--ink-3);
+      font-size: 12px;
+    }
+
+    .meta span,
+    .meta .status {
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      font-size: inherit;
+      font-weight: 400;
+    }
+
+    .meta span:not(:last-child)::after {
+      content: " · ";
+      margin: 0 7px;
+      color: var(--line-strong);
+    }
+
+    .content { padding: 0; }
+
+    section { padding: 32px 0; }
+
+    h2 {
+      gap: 9px;
+      margin-bottom: 14px;
+      font-size: 22px;
+      letter-spacing: -0.01em;
+    }
+
+    h2 .num {
+      color: var(--ink-3);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+
+    .hero-statement,
+    .risk-note,
+    .evidence-note {
+      margin: 16px 0 0;
+      padding: 12px 14px;
+      border: 0;
+      border-left: 3px solid var(--blue);
+      border-radius: 2px;
+      background: var(--blue-soft);
+      color: var(--ink-2);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .risk-note {
+      border-left-color: #d99a2b;
+      background: var(--amber-soft);
+    }
+
+    .evidence-note {
+      border-left-color: var(--line-strong);
+      background: #f7f8fa;
+    }
+
+    .logic-grid,
+    .three-layer {
+      display: block;
+      margin-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .logic-card,
+    .layer {
+      min-height: 0;
+      padding: 14px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .logic-card:not(:last-child)::after { display: none; }
+
+    .logic-card small {
+      margin-bottom: 2px;
+      color: var(--ink-3);
+      font-weight: 600;
+    }
+
+    .logic-card strong,
+    .layer strong { font-size: 16px; }
+
+    .logic-card p,
+    .layer p {
+      margin: 4px 0 0;
+      color: var(--ink-2);
+      font-size: 14px;
+    }
+
+    .layer b {
+      display: inline;
+      width: auto;
+      height: auto;
+      margin-right: 8px;
+      color: var(--blue);
+      background: transparent;
+      border-radius: 0;
+      font-size: 13px;
+    }
+
+    .scope-grid,
+    .value-grid,
+    .decision-grid {
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .scope-card,
+    .value-card,
+    .decision-card {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .scope-card.in,
+    .scope-card.out,
+    .decision-card.go,
+    .decision-card.hold,
+    .decision-card.stop {
+      background: #fff;
+      border-color: var(--line);
+    }
+
+    .table-wrap {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+    }
+
+    table { font-size: 13px; }
+
+    th,
+    td { padding: 10px 12px; }
+
+    th {
+      background: #f7f8fa;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    tbody tr:hover { background: transparent; }
+
+    .badge {
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    .formula {
+      margin: 16px 0;
+      padding: 14px 16px;
+      color: var(--ink);
+      background: var(--blue-soft);
+      border-left: 3px solid var(--blue);
+      border-radius: 2px;
+    }
+
+    .formula small { margin-bottom: 4px; color: var(--blue); }
+    .formula strong { font-size: 16px; }
+    .formula p { color: var(--ink-2); }
+
+    .metric-grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .metric {
+      padding: 12px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .funnel {
+      gap: 5px;
+      padding: 12px 0;
+      border: 0;
+      border-radius: 0;
+      background: #fff;
+    }
+
+    .funnel span {
+      padding: 2px 5px;
+      background: #f7f8fa;
+      border: 0;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .steps { gap: 0; border-top: 1px solid var(--line); }
+
+    .step {
+      grid-template-columns: 104px minmax(0, 1fr) 148px;
+      gap: 14px;
+      padding: 14px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .demo-list { gap: 0; border-top: 1px solid var(--line); }
+
+    .demo-item {
+      padding: 13px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .demo-item b {
+      width: 28px;
+      height: 28px;
+      background: #f2f3f5;
+      border-radius: 50%;
+    }
+
+    .footer {
+      padding: 24px 0 12px;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: minmax(0, 760px); }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding: 0 22px 48px; }
+      .cover { padding: 32px 0 24px; }
+      .content { padding: 0; }
+      .footer { padding: 20px 0 8px; }
+      h1 { font-size: 30px; }
+      .cover-lead { font-size: 15px; }
+      .scope-grid,
+      .value-grid,
+      .decision-grid { grid-template-columns: 1fr; }
+      .step { grid-template-columns: 1fr; gap: 4px; }
+      .step .gate { padding: 6px 0 0; border-top: 0; border-left: 0; }
+      .table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+      table { display: table; min-width: 620px; }
+      thead { position: static; display: table-header-group; width: auto; height: auto; overflow: visible; clip: auto; }
+      tbody { display: table-row-group; }
+      tr { display: table-row; margin: 0; border: 0; }
+      th,
+      td { display: table-cell; }
+      td::before { display: none; }
+      tr:last-child td { border-bottom: 0; }
+    }
+
+    @media (max-width: 420px) {
+      .shell { padding: 0 18px 40px; }
+      .cover { padding: 28px 0 22px; }
+      .content { padding: 0; }
+      .footer { padding: 18px 0 8px; }
+      h1 { font-size: 28px; }
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="shell">
+    <nav class="toc" aria-label="文档目录">
+      <strong>目录</strong>
+      <a href="#verdict">00　价值判定</a>
+      <a href="#scope">01　评测范围</a>
+      <a href="#baseline">02　对照方案</a>
+      <a href="#layers">03　三层评测</a>
+      <a href="#offline">04　离线能力</a>
+      <a href="#user-test">05　用户价值</a>
+      <a href="#metrics">06　线上指标</a>
+      <a href="#events">07　埋点漏斗</a>
+      <a href="#rollout">08　灰度阶梯</a>
+      <a href="#decision">09　决策门槛</a>
+      <a href="#demo">10　Demo闭环</a>
+      <a href="#limits">11　证据边界</a>
+    </nav>
+
+    <article class="document">
+      <header class="cover">
+        <p class="eyebrow">Tencent AI Product Practice · Evaluation Plan</p>
+        <h1>评测与灰度方案</h1>
+        <p class="cover-lead">验证“进度感知型剧情助手”能否比现有主动问答更快、更准确地修复剧情理解断点，同时不增加剧透、打扰与退出。</p>
+        <div class="meta" aria-label="文档信息">
+          <span>剧情灵伴</span>
+          <span>版本 V1.0</span>
+          <span>2026-09-09</span>
+          <span class="status">方案设计 · 尚未执行实验</span>
+        </div>
+      </header>
+
+      <main id="main" class="content">
+        <section id="verdict">
+          <h2><span class="num">00</span>基础价值如何判定</h2>
+          <p class="hero-statement">新方案是否比现有主动问答<strong>更快、更准确地恢复剧情理解</strong>，同时<strong>没有明显伤害连续观看体验</strong>？</p>
+          <div class="logic-grid" aria-label="基础价值成立的三个条件">
+            <article class="logic-card">
+              <small>NEED</small>
+              <strong>问题真实存在</strong>
+              <p>用户确实会因人物、前情或时间线产生影响观看的理解断点。</p>
+            </article>
+            <article class="logic-card">
+              <small>VALUE</small>
+              <strong>帮助更有效率</strong>
+              <p>用户用更少描述和步骤获得正确答案，并更快恢复播放。</p>
+            </article>
+            <article class="logic-card">
+              <small>GUARDRAIL</small>
+              <strong>观看没有受损</strong>
+              <p>不剧透、不误导、不强打扰，关闭后能回到原播放位置。</p>
+            </article>
+          </div>
+          <p class="risk-note"><strong>点击率和观看时长不能单独证明价值。</strong>点击可能来自新奇感；观看时长增长也可能意味着 AI 延长了暂停和操作。</p>
+        </section>
+
+        <section id="scope">
+          <h2><span class="num">01</span>基础评测范围</h2>
+          <p>先验证最小闭环，避免时间线、剧情线和长期记忆等扩展能力干扰基础价值判断。</p>
+          <div class="scope-grid">
+            <article class="scope-card in">
+              <h3>本轮纳入</h3>
+              <ul>
+                <li>人物身份与人物关系说明；</li>
+                <li>与当前片段相关的已观看前情；</li>
+                <li>当前进度内的一次有限追问；</li>
+                <li>获得帮助后返回原位置播放。</li>
+              </ul>
+            </article>
+            <article class="scope-card out">
+              <h3>后续单独评测</h3>
+              <ul>
+                <li>完整剧情线与伏笔探索；</li>
+                <li>幕后内容和主创资料；</li>
+                <li>“替我记着”与跨集记忆；</li>
+                <li>开放式长对话及主动推荐。</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="baseline">
+          <h2><span class="num">02</span>对照方案</h2>
+          <p>核心竞品是平台已有的主动问答体验，而不是“完全没有 AI”。实验采用用户—剧目级随机分组，避免同一用户在同一部剧中频繁切换体验。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>分组</th><th>使用体验</th><th>实验作用</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="分组"><strong>A组：现有AI</strong></td>
+                  <td data-label="使用体验">用户寻找入口、组织完整问题，再阅读独立回答。</td>
+                  <td data-label="实验作用">作为主要业务基线，定位入口、表达和返回播放的损耗。</td>
+                </tr>
+                <tr>
+                  <td data-label="分组"><strong>B组：剧情灵伴</strong></td>
+                  <td data-label="使用体验">暂停后主动打开情境入口，系统自动携带画面、字幕与进度。</td>
+                  <td data-label="实验作用">验证观看内上下文是否提高理解恢复效率。</td>
+                </tr>
+                <tr>
+                  <td data-label="分组"><strong>自然观察</strong></td>
+                  <td data-label="使用体验">用户自行回看、拖动、看评论或离开播放器。</td>
+                  <td data-label="实验作用">理解真实替代路径；不直接作为主A/B实验组。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="evidence-note">若现有 AI 的真实入口和能力边界尚未完成实测，A组应先按真实产品补齐，不能用想象中的低效版本充当对照。</p>
+        </section>
+
+        <section id="layers">
+          <h2><span class="num">03</span>三层评测框架</h2>
+          <div class="three-layer">
+            <article class="layer">
+              <b>01</b>
+              <strong>离线能力门禁</strong>
+              <p>先确认回答正确、守住观看进度、知道何时不能回答。</p>
+            </article>
+            <article class="layer">
+              <b>02</b>
+              <strong>受控用户实验</strong>
+              <p>用理解题和操作记录验证是否真正恢复理解、节省时间。</p>
+            </article>
+            <article class="layer">
+              <b>03</b>
+              <strong>线上灰度实验</strong>
+              <p>用真实观看漏斗验证规模化价值和连续观看护栏。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="offline">
+          <h2><span class="num">04</span>第一层：离线能力门禁</h2>
+          <h3>测试集设计</h3>
+          <p>首轮选择3～5部人物多、线索密集或时间线复杂的连续剧；每部选择10～20个关键剧情节点。每个节点均标明剧集、播放时间、允许使用的剧情范围、标准事实、依据片段和禁止透露的信息。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>问题类型</th><th>建议占比</th><th>代表问题</th><th>核心风险</th></tr>
+              </thead>
+              <tbody>
+                <tr><td data-label="问题类型">人物与关系</td><td data-label="建议占比">40%</td><td data-label="代表问题">“这个人是谁？”</td><td data-label="核心风险">认错人物、关系混淆</td></tr>
+                <tr><td data-label="问题类型">前情与事件</td><td data-label="建议占比">30%</td><td data-label="代表问题">“他之前为什么帮助主角？”</td><td data-label="核心风险">引用错误集数或事件</td></tr>
+                <tr><td data-label="问题类型">当前内容理解</td><td data-label="建议占比">15%</td><td data-label="代表问题">“这句话在暗示什么？”</td><td data-label="核心风险">把解读包装成事实</td></tr>
+                <tr><td data-label="问题类型">尚未揭晓</td><td data-label="建议占比">15%</td><td data-label="代表问题">“他是不是幕后真凶？”</td><td data-label="核心风险">泄露后续反转</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>建议准入门槛</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>指标</th><th>测量定义</th><th>候选门槛</th><th>性质</th></tr>
+              </thead>
+              <tbody>
+                <tr><td data-label="指标">人物识别正确率</td><td data-label="测量定义">人物身份是否匹配当前画面</td><td data-label="候选门槛">≥95%</td><td data-label="性质"><span class="badge target">能力</span></td></tr>
+                <tr><td data-label="指标">剧情事实正确率</td><td data-label="测量定义">关系、事件和时间线是否准确</td><td data-label="候选门槛">≥95%</td><td data-label="性质"><span class="badge target">能力</span></td></tr>
+                <tr><td data-label="指标">进度边界通过率</td><td data-label="测量定义">是否仅使用当前进度以前的信息</td><td data-label="候选门槛">≥99%</td><td data-label="性质"><span class="badge must">P0门禁</span></td></tr>
+                <tr><td data-label="指标">严重剧透数</td><td data-label="测量定义">是否泄露关键身份、结局或反转</td><td data-label="候选门槛">0</td><td data-label="性质"><span class="badge must">P0门禁</span></td></tr>
+                <tr><td data-label="指标">未知识别正确率</td><td data-label="测量定义">能否识别“当前尚未揭晓”</td><td data-label="候选门槛">≥95%</td><td data-label="性质"><span class="badge target">能力</span></td></tr>
+                <tr><td data-label="指标">依据匹配率</td><td data-label="测量定义">引用剧情节点能否支持回答</td><td data-label="候选门槛">≥90%</td><td data-label="性质"><span class="badge target">可信</span></td></tr>
+                <tr><td data-label="指标">首屏响应时间</td><td data-label="测量定义">提交后出现有效内容的时间</td><td data-label="候选门槛">P95≤3秒</td><td data-label="性质"><span class="badge target">体验</span></td></tr>
+                <tr><td data-label="指标">服务失败率</td><td data-label="测量定义">超时、空回答或不可用比例</td><td data-label="候选门槛">＜1%</td><td data-label="性质"><span class="badge target">稳定</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="risk-note">所有数值均为首轮候选门槛，需要通过预实验校准。严重剧透、系统性认错人物和编造动机不能由平均分抵消。</p>
+        </section>
+
+        <section id="user-test">
+          <h2><span class="num">05</span>第二层：用户价值实验</h2>
+          <h3>实验设计</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>要素</th><th>设计</th></tr></thead>
+              <tbody>
+                <tr><td data-label="要素"><strong>目标用户</strong></td><td data-label="设计">经常观看连续剧，有间隔追更或同时追多部剧习惯，并曾因人物或前情复杂而回看或搜索。</td></tr>
+                <tr><td data-label="要素"><strong>建议样本</strong></td><td data-label="设计">24～30人进行首轮可用性与方向验证；正式实验样本由预实验方差和最小可检测效果计算。</td></tr>
+                <tr><td data-label="要素"><strong>实验方式</strong></td><td data-label="设计">交叉实验：每人观看6段难度相近的剧情片段，一半使用现有AI，一半使用剧情灵伴；顺序随机。</td></tr>
+                <tr><td data-label="要素"><strong>核心任务</strong></td><td data-label="设计">在关键人物或旧线索再次出现时，确认人物身份、理解与主角的关系，并恢复观看。</td></tr>
+                <tr><td data-label="要素"><strong>控制原则</strong></td><td data-label="设计">不强制用户使用AI，记录其自然选择；不同组使用等难度但不同内容，避免记忆答案。</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>实验室“有效恢复”</h3>
+          <div class="formula">
+            <small>PRIMARY OUTCOME</small>
+            <strong>正确回答理解题 ＋ 主观确认疑问已解决 ＋ 从原时间点继续播放</strong>
+            <p>三个条件缺一不可：满意但理解错误不算成功；理解正确但无法顺畅返回播放也不算完成闭环。</p>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>指标</th><th>测量方式</th><th>证明内容</th><th>候选成功门槛</th></tr></thead>
+              <tbody>
+                <tr><td data-label="指标">理解正确率</td><td data-label="测量方式">完成不含剧透的理解题</td><td data-label="证明内容">是否真正恢复理解</td><td data-label="候选成功门槛">较A组提升≥10个百分点</td></tr>
+                <tr><td data-label="指标">主观解惑率</td><td data-label="测量方式">选择“已解决／仍困惑”</td><td data-label="证明内容">是否感到有帮助</td><td data-label="候选成功门槛">较A组提升≥15个百分点</td></tr>
+                <tr><td data-label="指标">理解恢复时长</td><td data-label="测量方式">从产生疑问到恢复播放</td><td data-label="证明内容">帮助是否更高效</td><td data-label="候选成功门槛">中位数下降≥25%</td></tr>
+                <tr><td data-label="指标">上下文描述量</td><td data-label="测量方式">用户输入的背景字数与步骤</td><td data-label="证明内容">是否利用观看上下文</td><td data-label="候选成功门槛">下降≥50%</td></tr>
+                <tr><td data-label="指标">返回播放成功率</td><td data-label="测量方式">是否从原时间点恢复</td><td data-label="证明内容">是否形成操作闭环</td><td data-label="候选成功门槛">≥90%</td></tr>
+                <tr><td data-label="指标">不打扰评分</td><td data-label="测量方式">1～5分主观评分</td><td data-label="证明内容">是否保护沉浸体验</td><td data-label="候选成功门槛">≥4分</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="metrics">
+          <h2><span class="num">06</span>第三层：线上价值指标</h2>
+          <p>线上不能频繁向用户出理解题，因此应明确区分“真实价值指标”和“线上代理指标”。</p>
+          <div class="formula">
+            <small>ONLINE PROXY</small>
+            <strong>有效帮助后顺畅续播率</strong>
+            <p>“已解决”且30秒内恢复播放，并在随后2分钟内没有再次回看、重复求助或退出的会话数 ÷ 已展示有效回答的会话数。</p>
+          </div>
+          <div class="metric-grid">
+            <article class="metric"><strong>入口与表达</strong><span>曝光率、打开率、快捷问题选择率、输入到提交率、问题重述率。</span></article>
+            <article class="metric"><strong>回答与恢复</strong><span>首屏延迟、答案前关闭率、有帮助反馈率、恢复播放时间、重复求助率。</span></article>
+            <article class="metric"><strong>连续观看护栏</strong><span>剧集退出率、完播率、提示屏蔽率、服务失败率、错误与剧透反馈。</span></article>
+          </div>
+          <p class="evidence-note">“站外搜索”不建议通过采集其他应用的具体行为判断。可在受控测试中观察，线上仅使用匿名离开播放器和返回行为作为有限代理。</p>
+        </section>
+
+        <section id="events">
+          <h2><span class="num">07</span>埋点与诊断漏斗</h2>
+          <div class="funnel" aria-label="剧情助手埋点漏斗">
+            <span>候选场景</span><i>→</i>
+            <span>入口曝光</span><i>→</i>
+            <span>主动打开</span><i>→</i>
+            <span>选择/输入</span><i>→</i>
+            <span>提交问题</span><i>→</i>
+            <span>首屏答案</span><i>→</i>
+            <span>是否解决</span><i>→</i>
+            <span>恢复播放</span><i>→</i>
+            <span>2分钟观察</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>阶段</th><th>建议事件</th><th>诊断问题</th></tr></thead>
+              <tbody>
+                <tr><td data-label="阶段">入口</td><td data-label="建议事件"><code>assistant_entry_impression</code><br><code>assistant_entry_open</code></td><td data-label="诊断问题">用户是否看见入口、是否愿意主动展开</td></tr>
+                <tr><td data-label="阶段">提问</td><td data-label="建议事件"><code>quick_question_select</code><br><code>question_submit</code></td><td data-label="诊断问题">快捷问题是否降低表达成本</td></tr>
+                <tr><td data-label="阶段">回答</td><td data-label="建议事件"><code>answer_first_content</code><br><code>answer_complete</code></td><td data-label="诊断问题">是否在可接受时间内提供有效内容</td></tr>
+                <tr><td data-label="阶段">结果</td><td data-label="建议事件"><code>answer_helpful_yes/no</code><br><code>playback_resume</code></td><td data-label="诊断问题">问题是否解决、用户能否顺畅续播</td></tr>
+                <tr><td data-label="阶段">后效</td><td data-label="建议事件"><code>repeat_seek_after_answer</code><br><code>episode_exit_after_answer</code></td><td data-label="诊断问题">第一次帮助是否有效、是否伤害观看</td></tr>
+                <tr><td data-label="阶段">风险</td><td data-label="建议事件"><code>wrong_answer_report</code><br><code>spoiler_report</code></td><td data-label="诊断问题">错误解释与剧透是否需要立即回退</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="rollout">
+          <h2><span class="num">08</span>灰度发布阶梯</h2>
+          <p>从“内容白名单＋用户主动打开”开始，每轮只扩大一个变量，避免同时增加剧目、用户和触发方式后无法解释波动。</p>
+          <div class="steps">
+            <article class="step">
+              <div class="stage">阶段0<br>内部验证</div>
+              <p>内部员工与测试用户；覆盖3～5部人工审核完成的剧集；只在暂停后提供主动入口。重点排查人物识别、进度越界、播放死路和错误恢复。</p>
+              <div class="gate"><strong>通过：</strong><br>无严重剧透；P0流程可退出；故障不影响播放器。</div>
+            </article>
+            <article class="step">
+              <div class="stage">阶段1<br>1%白名单</div>
+              <p>仅覆盖复杂长剧和高置信度剧情节点；按用户—剧目随机进入A/B组；至少观察7天或一个完整追剧周期。</p>
+              <div class="gate"><strong>通过：</strong><br>代理价值指标提升；退出、完播及投诉护栏稳定。</div>
+            </article>
+            <article class="step">
+              <div class="stage">阶段2<br>5%～10%</div>
+              <p>逐步扩展剧目和剧情节点；分别测试人物卡、快捷问题和文字输入。时间线与剧情线作为独立实验，不并入基础指标。</p>
+              <div class="gate"><strong>通过：</strong><br>不同内容与设备上效果方向一致。</div>
+            </article>
+            <article class="step">
+              <div class="stage">阶段3<br>25%～50%</div>
+              <p>扩大用户群和内容覆盖，继续保留白名单、剧透监控、内容版本回退与用户屏蔽入口。</p>
+              <div class="gate"><strong>通过：</strong><br>规模化后质量、价值和护栏仍稳定。</div>
+            </article>
+          </div>
+        </section>
+
+        <section id="decision">
+          <h2><span class="num">09</span>放量、迭代与回退</h2>
+          <div class="decision-grid">
+            <article class="decision-card go">
+              <h3>可以扩大灰度</h3>
+              <p>离线能力门槛通过；理解和恢复效率优于现有AI；线上代理指标显著提升；完播、退出与投诉没有明显恶化。</p>
+            </article>
+            <article class="decision-card hold">
+              <h3>保持小流量迭代</h3>
+              <p>点击提升但理解没有改善；回答有帮助但恢复播放没有变快；只在少数剧目有效；扩展功能价值不清晰。</p>
+            </article>
+            <article class="decision-card stop">
+              <h3>立即暂停或回退</h3>
+              <p>出现经确认的严重剧透、系统性认错人物或引用错误前情；AI浮层形成播放死路；服务故障影响视频；剧集退出率明显上升。严重剧透按内容与模型版本立即停灰，不等待平均指标。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="demo">
+          <h2><span class="num">10</span>Demo需要补齐的测评闭环</h2>
+          <p>当前 Demo 已具备人物上下文卡、追问、时间线、剧情线、加载、错误与返回播放状态。为了在答辩中展示“可验证”，建议只补三个轻量环节：</p>
+          <div class="demo-list">
+            <article class="demo-item"><b>1</b><p>点击“继续播放”后显示轻反馈：<strong>“刚才的回答解决了你的疑问吗？ 已解决 / 仍困惑”</strong>。</p></article>
+            <article class="demo-item"><b>2</b><p>选择“仍困惑”后给出两个恢复出口：<strong>继续追问</strong>或<strong>回看相关片段</strong>，避免流程中断。</p></article>
+            <article class="demo-item"><b>3</b><p>演示时展示最小事件链：<strong>打开入口 → 查看回答 → 反馈结果 → 恢复播放</strong>，说明后续如何形成评测数据。</p></article>
+          </div>
+          <p class="risk-note">错误状态虽然已在代码中定义，但当前普通演示路径不能主动进入，因此只能标记为“已实现、尚未真实验证”。时间线、剧情线和“替我记着”属于扩展能力，不参与基础价值判定。</p>
+        </section>
+
+        <section id="limits">
+          <h2><span class="num">11</span>证据边界与待确认项</h2>
+          <ul>
+            <li>当前没有真实腾讯视频用户数据，本方案中的频率、提升幅度和阈值均为待验证设计。</li>
+            <li>现有平台AI的入口、上下文能力、回答结构和返回播放流程需要通过真实产品实测补齐。</li>
+            <li>离线标准答案应由内容编辑或版权内容知识库提供，不能由模型自行生成后再自评。</li>
+            <li>正式A/B样本量应通过预实验方差、基线值和最小可检测效果计算，24～30人仅用于首轮方向验证。</li>
+            <li>线上代理指标不能替代真实理解测试；二者应共同支持最终决策。</li>
+          </ul>
+          <p class="hero-statement"><strong>最终判定：</strong>目标用户确实存在剧情理解断点；观看内助手比现有主动问答更少输入、更快恢复理解；回答准确且不越过观看进度；用户能够顺畅继续播放；退出、打扰和剧透风险没有明显增加。</p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        腾讯 AI 产培产品实战 · 独立评测交付物。本文为方案设计，不代表实验已经执行或指标已经达成。
+      </footer>
+    </article>
+  </div>
+</body>
+</html>

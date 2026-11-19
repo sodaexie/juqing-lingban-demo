@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Dependencies and logs
+node_modules/
+*.log
+
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Editor files
+.vscode/
+.idea/

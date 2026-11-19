@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="腾讯 AI 产培两小时产品实战：AI 辅助看剧的用户问题与产品定位说明 V2。">
+  <title>用户问题与产品定位说明 V2｜AI 辅助看剧</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --ink-soft: #6b7890;
+      --paper: #ffffff;
+      --canvas: #f3f6fa;
+      --line: #dce3ec;
+      --blue: #1769e0;
+      --blue-deep: #0c4fb7;
+      --blue-soft: #edf5ff;
+      --cyan: #16a6b6;
+      --green: #087a55;
+      --green-soft: #eaf8f2;
+      --amber: #9b5a00;
+      --amber-soft: #fff6e5;
+      --red: #a83d3d;
+      --red-soft: #fff0f1;
+      --shadow: 0 20px 60px rgba(43, 57, 76, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 32px;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 90% 2%, rgba(23, 105, 224, 0.08), transparent 25rem),
+        var(--canvas);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      z-index: 20;
+      padding: 8px 12px;
+      color: #fff;
+      background: var(--blue-deep);
+      border-radius: 8px;
+      transform: translateY(-160%);
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 940px);
+      align-items: start;
+      justify-content: center;
+      gap: 28px;
+      padding: 28px 24px 72px;
+    }
+
+    .toc {
+      position: sticky;
+      top: 24px;
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      padding: 18px 16px;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+    }
+
+    .toc a {
+      display: block;
+      padding: 5px 0;
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible {
+      color: var(--blue-deep);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .document {
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(201, 211, 224, 0.7);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .cover {
+      position: relative;
+      overflow: hidden;
+      padding: 66px 64px 48px;
+      color: var(--ink);
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cover::after {
+      display: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(40px, 5vw, 60px);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    .cover-lead {
+      max-width: 690px;
+      margin: 22px 0 0;
+      color: var(--ink-soft);
+      font-size: 19px;
+      line-height: 1.68;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 26px;
+    }
+
+    .meta span {
+      padding: 6px 11px;
+      color: var(--ink-soft);
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .content { padding: 6px 64px 60px; }
+
+    section {
+      padding: 34px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child { border-bottom: 0; }
+
+    h2 {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 0 0 18px;
+      font-size: 25px;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    h2 .num {
+      flex: none;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    h3 {
+      margin: 24px 0 9px;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    p { margin: 10px 0; }
+
+    ul,
+    ol {
+      margin: 10px 0;
+      padding-left: 1.25em;
+    }
+
+    li { margin: 6px 0; }
+
+    strong { font-weight: 730; }
+
+    #summary h2 { margin-bottom: 18px; }
+
+    .decision-list {
+      margin-top: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .decision-row {
+      display: grid;
+      grid-template-columns: 124px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .decision-kicker {
+      margin: 3px 0 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .decision-copy {
+      max-width: 780px;
+      margin: 0;
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+    }
+
+    .decision-priority .decision-kicker { color: var(--blue); }
+
+    .decision-priority .decision-copy {
+      color: var(--ink-soft);
+    }
+
+    .decision-priority .decision-copy strong { color: var(--ink); }
+
+    .statement {
+      margin: 20px 0;
+      padding: 16px 18px;
+      background: var(--blue-soft);
+      border: 1px solid #bed5f5;
+      border-left: 4px solid var(--blue);
+      border-radius: 12px;
+      font-size: 16px;
+      line-height: 1.68;
+    }
+
+    .evidence-grid,
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .evidence,
+    .value-card {
+      padding: 18px 19px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .evidence h3,
+    .value-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .evidence p,
+    .value-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .badge.fact { color: var(--green); background: var(--green-soft); }
+    .badge.user { color: var(--blue-deep); background: var(--blue-soft); }
+    .badge.hypothesis { color: var(--amber); background: var(--amber-soft); }
+
+    .table-wrap {
+      margin: 18px 0;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--ink-soft);
+      background: #f6f8fb;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #f9fbfe; }
+
+    .priority {
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .priority.high { color: var(--blue-deep); }
+    .priority.medium { color: var(--amber); }
+    .priority.later { color: var(--ink-soft); }
+
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: journey;
+    }
+
+    .journey li {
+      position: relative;
+      min-height: 116px;
+      margin: 0;
+      padding: 42px 14px 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      counter-increment: journey;
+    }
+
+    .journey li::before {
+      content: counter(journey, decimal-leading-zero);
+      position: absolute;
+      top: 13px;
+      left: 14px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .journey strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .journey span {
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .shift {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      margin: 20px 0;
+      padding: 22px;
+      background: #f6f8fb;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .shift h3 { margin: 0 0 6px; font-size: 15px; }
+    .shift p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .shift .arrow { color: var(--blue); font-size: 24px; font-weight: 800; }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .principle {
+      padding: 16px 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+
+    .principle strong { display: block; margin-bottom: 4px; }
+    .principle span { color: var(--ink-soft); font-size: 14px; }
+
+    .risk-note {
+      padding: 18px 20px;
+      color: #7a4300;
+      background: var(--amber-soft);
+      border: 1px solid #efd29b;
+      border-radius: 12px;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(20,105,232,0.45);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: minmax(0, 850px); }
+      .toc { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      body { font-size: 15px; }
+      .layout { padding: 0; }
+      .document { border: 0; border-radius: 0; box-shadow: none; }
+      .cover { padding: 42px 24px 30px; }
+      h1 { font-size: 40px; }
+      .cover-lead { font-size: 16px; }
+      .content { padding: 4px 24px 48px; }
+      section { padding: 26px 0; }
+      h2 { font-size: 22px; }
+      .evidence-grid,
+      .value-grid,
+      .principles { grid-template-columns: 1fr; }
+
+      .decision-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 18px 0;
+      }
+
+      .decision-kicker { margin-top: 0; }
+      .decision-copy { font-size: 17px; }
+      .evidence,
+      .value-card {
+        padding: 14px 0;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .evidence:last-child,
+      .value-card:last-child { border-bottom: 0; }
+      .journey { grid-template-columns: 1fr; }
+      .journey li { min-height: 0; }
+      .shift { grid-template-columns: 1fr; }
+      .shift .arrow { transform: rotate(90deg); justify-self: start; }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+      }
+
+      table,
+      tbody,
+      tr,
+      td { display: block; width: 100%; }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      tbody tr {
+        margin-bottom: 14px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      tbody tr:hover { background: #fff; }
+
+      td {
+        display: grid;
+        grid-template-columns: 7.25rem minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px 12px;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 800;
+      }
+    }
+
+    /* 简洁文档模式：沿用评测文档的蓝灰色与字体体系，只保留必要层级。 */
+    body { background: #fff; }
+
+    .layout {
+      display: block;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    .toc { display: none; }
+
+    .document {
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .cover {
+      padding: 0 0 30px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cover::before,
+    .cover::after { display: none; }
+
+    .eyebrow {
+      margin-bottom: 12px;
+      color: var(--ink-soft);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+    }
+
+    h1 {
+      font-size: 36px;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+    }
+
+    .cover-lead {
+      margin-top: 14px;
+      color: var(--ink-soft);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .meta {
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .meta span {
+      padding: 0;
+      color: var(--ink-soft);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      font-size: 12px;
+    }
+
+    .content { padding: 0; }
+
+    section {
+      padding: 32px 0 0;
+      border-bottom: 0;
+    }
+
+    section + section { margin-top: 8px; }
+
+    h2 {
+      gap: 9px;
+      margin-bottom: 16px;
+      font-size: 24px;
+      letter-spacing: -0.015em;
+    }
+
+    h2 .num {
+      color: var(--blue);
+      font-size: 13px;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+
+    .decision-list { border-top: 0; }
+
+    .decision-row {
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 20px;
+      padding: 14px 0;
+    }
+
+    .decision-row:first-child { padding-top: 0; }
+
+    .decision-kicker,
+    .decision-copy {
+      font-size: 16px;
+      line-height: 1.72;
+      letter-spacing: 0;
+    }
+
+    .decision-kicker {
+      margin-top: 0;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .decision-priority .decision-kicker { color: var(--ink); }
+    .decision-priority .decision-copy { color: var(--ink); }
+
+    .statement {
+      margin: 12px 0;
+      padding: 12px 16px;
+      background: #f6f8fb;
+      border: 0;
+      border-left: 3px solid var(--blue);
+      border-radius: 3px;
+      font-size: 16px;
+      line-height: 1.72;
+    }
+
+    .evidence-grid,
+    .value-grid,
+    .principles {
+      display: block;
+      margin-top: 0;
+    }
+
+    .evidence,
+    .value-card,
+    .principle {
+      margin: 0 0 18px;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .evidence p,
+    .value-card p,
+    .principle span {
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.72;
+    }
+
+    .badge {
+      margin-bottom: 4px;
+      padding: 0;
+      background: transparent !important;
+      border-radius: 0;
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      border-radius: 3px;
+    }
+
+    .journey {
+      display: block;
+      margin: 14px 0;
+    }
+
+    .journey li {
+      min-height: 0;
+      margin: 0 0 12px;
+      padding: 0 0 0 34px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .journey li::before {
+      top: 1px;
+      left: 0;
+      font-size: 13px;
+    }
+
+    .journey strong,
+    .journey span {
+      display: inline;
+      font-size: 16px;
+      line-height: 1.72;
+    }
+
+    .journey strong { margin-right: 6px; }
+
+    .shift {
+      padding: 16px;
+      background: #f6f8fb;
+      border: 0;
+      border-left: 3px solid var(--blue);
+      border-radius: 3px;
+    }
+
+    .risk-note {
+      padding: 12px 16px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 720px) {
+      .layout { padding: 28px 20px 64px; }
+      .cover { padding: 0 0 24px; }
+      h1 { font-size: 30px; }
+      .cover-lead { font-size: 16px; }
+      .content { padding: 0; }
+      section { padding: 28px 0 0; }
+      h2 { font-size: 22px; }
+      .decision-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+        padding: 13px 0;
+      }
+      .decision-kicker,
+      .decision-copy { font-size: 16px; }
+      .evidence,
+      .value-card { border-bottom: 0; }
+      tbody tr { border-radius: 3px; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 14mm; }
+      body { background: #fff; font-size: 10.5pt; }
+      .layout { display: block; padding: 0; }
+      .toc { display: none; }
+      .document { border: 0; border-radius: 0; box-shadow: none; }
+      .cover {
+        padding: 22mm 15mm 18mm;
+        color: var(--ink);
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .content { padding: 5mm 15mm 0; }
+      section { padding: 8mm 0; break-inside: auto; }
+      h2, h3, .statement, .decision-row, .value-card, .evidence { break-inside: avoid; }
+      .table-wrap { overflow: visible; break-inside: auto; }
+      table { font-size: 8.8pt; }
+      tr { break-inside: avoid; }
+      .journey li { break-inside: avoid; }
+      a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <div class="layout">
+    <aside class="toc" aria-label="文档目录">
+      <strong>内容导航</strong>
+      <a href="#summary">00　决策摘要</a>
+      <a href="#evidence">01　背景与证据</a>
+      <a href="#audience">02　目标用户</a>
+      <a href="#problem">03　核心问题</a>
+      <a href="#breakpoints">04　理解断点</a>
+      <a href="#current">05　现有路径</a>
+      <a href="#friction">06　现有 AI 问题</a>
+      <a href="#priority">07　优先场景</a>
+      <a href="#why-now">08　进入观看过程</a>
+      <a href="#signals">09　验证信号</a>
+      <a href="#positioning">10　产品定位</a>
+      <a href="#value">11　产品价值</a>
+      <a href="#boundary">12　产品边界</a>
+      <a href="#success">13　成功标准</a>
+      <a href="#open">14　待确认项</a>
+    </aside>
+
+    <main id="main" class="document">
+      <header class="cover">
+        <p class="eyebrow">Tencent AI Product Practice · 120 min</p>
+        <h1>用户问题与产品定位说明</h1>
+        <p class="cover-lead">AI 辅助看剧｜从播放外的主动问答，升级为理解此刻、承接此刻的观看内剧情服务。</p>
+        <div class="meta" aria-label="文档属性">
+          <span>V2</span>
+          <span>产品暂名：剧情灵伴</span>
+          <span>面向产品评审</span>
+          <span>结论与证据分层</span>
+          <span>2026.09.09</span>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="summary">
+          <h2><span class="num">00</span>决策摘要</h2>
+          <div class="decision-list">
+            <div class="decision-row decision-problem">
+              <p class="decision-kicker">核心问题</p>
+              <p class="decision-copy">用户在观看中出现理解断点时，现有 AI 无法在正确的时机、基于正确的上下文，以足够低的成本承接需求。</p>
+            </div>
+            <div class="decision-row">
+              <p class="decision-kicker">产品转变</p>
+              <p class="decision-copy">将平台已有的“播放外主动问答工具”，升级为嵌入播放过程、理解当前画面与观看进度的 AI 剧情理解服务。</p>
+            </div>
+            <div class="decision-row">
+              <p class="decision-kicker">核心闭环</p>
+              <p class="decision-copy">用户暂停或主动打开情境入口 → AI 自动带入当前画面、字幕与已观看进度 → 用户点选快捷问题或继续追问 → 获得不剧透、有依据的必要解释 → 从原位置继续播放。</p>
+            </div>
+            <div class="decision-row decision-priority">
+              <p class="decision-kicker">优先顺序</p>
+              <p class="decision-copy"><strong>基础产品聚焦人物身份、人物关系与相关前情导致的理解断点；</strong>与人物和前情直接相关的当前因果解释纳入同一闭环，开放式动机、隐喻与主题解读作为第二优先。伏笔发现、幕后内容与跨时点讨论属于后续价值。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="evidence">
+          <h2><span class="num">01</span>背景与证据边界</h2>
+          <div class="evidence-grid">
+            <article class="evidence">
+              <span class="badge fact">题面事实</span>
+              <h3>业务与能力基础</h3>
+              <p>平台已有主动问答式 AI；可使用字幕、镜头、完整剧情、人物关系、观看行为、多模态理解与对话记忆。</p>
+            </article>
+            <article class="evidence">
+              <span class="badge user">用户确认</span>
+              <h3>现有体验问题</h3>
+              <p>已有 AI 交互体验不佳；问题不能缩小为单一“认不出角色”，需要回到完整观看旅程。</p>
+            </article>
+            <article class="evidence">
+              <span class="badge hypothesis">待验证推断</span>
+              <h3>具体损耗位置</h3>
+              <p>入口发现、问题组织、上下文补充、答案阅读与返回播放可能存在损耗，仍需现有产品实测和数据确认。</p>
+            </article>
+          </div>
+
+          <h3>题面已确认</h3>
+          <ul>
+            <li>用户会遇到人物没认出、前情忘记、台词没听懂等问题，也会产生进一步探索欲望。</li>
+            <li>当前 AI 以用户主动提问后的回答为主，与播放过程相互分离。</li>
+            <li>正常播放、暂停、回看和不同观看进度下，用户对 AI 介入的接受程度不同。</li>
+            <li>AI 可采用浮层、侧边栏、语音和互动卡片；角色形象与声音的二次生成不在授权范围。</li>
+          </ul>
+
+          <h3>现阶段不能写成事实</h3>
+          <ul>
+            <li>现有 AI 的具体入口层级、提问步骤和返回播放路径。</li>
+            <li>用户问题的真实发生频率，以及它对完播、退出和满意度的实际影响。</li>
+            <li>新方案能够带来的业务提升幅度。</li>
+          </ul>
+        </section>
+
+        <section id="audience">
+          <h2><span class="num">02</span>目标用户</h2>
+          <h3>核心用户</h3>
+          <p>正在观看人物关系复杂、线索密集、叙事跨度较长或时间线非线性的连续剧用户，尤其是间隔追更、同时追多部剧、偶尔分心，并且不愿为解决疑问离开播放器的用户。</p>
+
+          <h3>非优先用户</h3>
+          <p>主要观看单集独立或低剧情依赖内容的用户；已经熟悉全部剧情的重复观看者；主要需求是角色陪伴、社交讨论或提前了解后续剧情的用户。</p>
+
+          <p class="footer-note">核心用户选择基于“当前片段依赖过去信息”的产品推断，用户规模与问题频率仍需数据验证。</p>
+        </section>
+
+        <section id="problem">
+          <h2><span class="num">03</span>核心用户问题</h2>
+          <h3>内容理解层</h3>
+          <p class="statement">用户因遗漏信息、遗忘前情或无法理解当前内容，使自己的认知上下文跟不上剧情推进。</p>
+          <h3>产品交互层</h3>
+          <p class="statement">平台已有 AI 能力，但主要等待用户主动寻找、组织问题并切换到问答状态，未自然承接问题发生的现场。</p>
+          <h3>用户真正要完成的任务</h3>
+          <p>“当我突然接不上剧情时，希望系统已经理解我正在看什么，只需一次简单操作就能获得不剧透的必要说明，然后从原位置继续观看。”</p>
+          <p><strong>用户要完成的是恢复理解并继续观看，而不是完成一次 AI 聊天。</strong></p>
+        </section>
+
+        <section id="breakpoints">
+          <h2><span class="num">04</span>理解断点分类</h2>
+          <p>五类问题发生在不同认知阶段，对观看的影响和 AI 的正确响应也不同。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">断点类型</th>
+                  <th scope="col">用户状态</th>
+                  <th scope="col">典型原因</th>
+                  <th scope="col">代表问题</th>
+                  <th scope="col">观看影响</th>
+                  <th scope="col">AI 应对原则</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="断点类型"><strong>信息遗漏</strong></td>
+                  <td data-label="用户状态">没有接收到</td>
+                  <td data-label="典型原因">分心、台词没听清、字幕过快、倍速或跳转</td>
+                  <td data-label="代表问题">“刚才发生了什么？”<br>“他说了什么？”</td>
+                  <td data-label="观看影响">即时信息缺失，可能迅速影响下一段理解</td>
+                  <td data-label="AI 应对原则">总结刚才片段，只补必要事实；必要时提供短距离回看</td>
+                </tr>
+                <tr>
+                  <td data-label="断点类型"><strong>记忆断层</strong></td>
+                  <td data-label="用户状态">看过但忘了</td>
+                  <td data-label="典型原因">追更间隔长、人物和支线多、旧线索再次出现</td>
+                  <td data-label="代表问题">“这个人之前出现过吗？”<br>“这件事前面怎么发生的？”</td>
+                  <td data-label="观看影响">当前剧情失去因果基础，理解缺口持续扩大</td>
+                  <td data-label="AI 应对原则">恢复与此刻直接相关的已观看前情，并标明出处</td>
+                </tr>
+                <tr>
+                  <td data-label="断点类型"><strong>理解障碍</strong></td>
+                  <td data-label="用户状态">看到了但没理解</td>
+                  <td data-label="典型原因">人物行为隐晦、双关或术语、多时间线交错</td>
+                  <td data-label="代表问题">“他为什么改变立场？”<br>“这句话在暗示谁？”</td>
+                  <td data-label="观看影响">无法建立人物动机、事件因果或时间关系</td>
+                  <td data-label="AI 应对原则">先给进度内事实，再区分合理推测；不替作品下定论</td>
+                </tr>
+                <tr>
+                  <td data-label="断点类型"><strong>叙事未知</strong></td>
+                  <td data-label="用户状态">当前没有答案</td>
+                  <td data-label="典型原因">悬疑留白、动机未揭晓、多义叙事、不可靠讲述</td>
+                  <td data-label="代表问题">“他是真凶吗？”<br>“这个细节到底代表什么？”</td>
+                  <td data-label="观看影响">错误解释可能直接破坏叙事和信任</td>
+                  <td data-label="AI 应对原则">明确区分已知、推测和尚未揭晓，严格阻断后续信息</td>
+                </tr>
+                <tr>
+                  <td data-label="断点类型"><strong>兴趣延展</strong></td>
+                  <td data-label="用户状态">已经看懂，想知道更多</td>
+                  <td data-label="典型原因">发现伏笔、镜头语言、文化背景或主创信息</td>
+                  <td data-label="代表问题">“这和前面哪个细节呼应？”<br>“这里有什么幕后信息？”</td>
+                  <td data-label="观看影响">不阻碍继续观看，但可能提升深度与讨论</td>
+                  <td data-label="AI 应对原则">只在用户主动探索或自然停顿点展开，作为后续价值</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="current">
+          <h2><span class="num">05</span>用户现有解决路径</h2>
+          <ol class="journey" aria-label="当前用户求助路径">
+            <li><strong>产生疑问</strong><span>具体画面、台词或前情无法接上。</span></li>
+            <li><strong>决定是否中断</strong><span>忽略、回看、搜索或使用 AI。</span></li>
+            <li><strong>重新描述现场</strong><span>组织剧名、人物、时间点和问题。</span></li>
+            <li><strong>阅读答案</strong><span>判断是否准确、相关且没有剧透。</span></li>
+            <li><strong>返回播放</strong><span>找回原进度并重新进入观看状态。</span></li>
+          </ol>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">解决方式</th>
+                  <th scope="col">能够解决</th>
+                  <th scope="col">主要成本</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td data-label="解决方式">忽略疑问</td><td data-label="能够解决">维持播放连续</td><td data-label="主要成本">理解缺口可能继续扩大</td></tr>
+                <tr><td data-label="解决方式">暂停或短距离回看</td><td data-label="能够解决">找回刚遗漏的信息</td><td data-label="主要成本">难以解决更早的前情与人物关系</td></tr>
+                <tr><td data-label="解决方式">拖动进度寻找前情</td><td data-label="能够解决">回到原始片段</td><td data-label="主要成本">定位成本高，破坏当前观看进度</td></tr>
+                <tr><td data-label="解决方式">查看弹幕或评论</td><td data-label="能够解决">获取其他观众解释</td><td data-label="主要成本">信息质量不稳定，容易剧透</td></tr>
+                <tr><td data-label="解决方式">离开播放器搜索</td><td data-label="能够解决">获取丰富资料</td><td data-label="主要成本">打断沉浸，搜索结果不知道用户看到哪里</td></tr>
+                <tr><td data-label="解决方式">使用现有平台 AI</td><td data-label="能够解决">无需离开平台即可问答</td><td data-label="主要成本">仍需主动寻找、组织问题并切换问答状态</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="friction">
+          <h2><span class="num">06</span>现有 AI 的关键问题</h2>
+          <div class="value-grid">
+            <article class="value-card">
+              <h3>时机脱节</h3>
+              <p>疑问产生于具体画面和台词，服务却主要等待用户离开观看状态后主动发问。</p>
+            </article>
+            <article class="value-card">
+              <h3>上下文成本</h3>
+              <p>用户可能仍需描述剧集、人物、台词和当前进度，重复说明眼前正在发生的事。</p>
+            </article>
+            <article class="value-card">
+              <h3>播放闭环缺失</h3>
+              <p>文本答案不是终点；用户还需要关闭解释、回看依据或从原位置恢复播放。</p>
+            </article>
+          </div>
+          <p class="risk-note"><strong>需避免另一极端：</strong>一次暂停或回看并不等于用户没看懂。合理方向是 AI 主动准备上下文、适时提供入口，由用户确认是否展开完整帮助。</p>
+        </section>
+
+        <section id="priority">
+          <h2><span class="num">07</span>优先场景判断</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">场景</th>
+                  <th scope="col">优先级</th>
+                  <th scope="col">判断依据</th>
+                  <th scope="col">主要风险</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="场景"><strong>人物、事件与前情遗忘</strong></td>
+                  <td data-label="优先级"><span class="priority high">第一优先</span></td>
+                  <td data-label="判断依据">当前理解直接依赖过去信息；短距离回看难解决；AI 的人物识别、时间线与进度能力有明确差异</td>
+                  <td data-label="主要风险">错误识别、前情引用不准</td>
+                </tr>
+                <tr>
+                  <td data-label="场景"><strong>遗漏刚发生的信息</strong></td>
+                  <td data-label="优先级"><span class="priority medium">第二优先</span></td>
+                  <td data-label="判断依据">问题即时，但短距离回看已经是低成本替代方案</td>
+                  <td data-label="主要风险">AI 比直接回看更慢</td>
+                </tr>
+                <tr>
+                  <td data-label="场景"><strong>开放式动机、隐喻与主题解读</strong></td>
+                  <td data-label="优先级"><span class="priority medium">第二优先</span></td>
+                  <td data-label="判断依据">与人物和前情直接相关的事实解释已纳入首要闭环；更开放的解读边界复杂</td>
+                  <td data-label="主要风险">过度解读、错误确定动机</td>
+                </tr>
+                <tr>
+                  <td data-label="场景"><strong>伏笔、幕后与主题探索</strong></td>
+                  <td data-label="优先级"><span class="priority later">后续价值</span></td>
+                  <td data-label="判断依据">能增加内容深度，但通常不阻碍继续观看</td>
+                  <td data-label="主要风险">喧宾夺主、分散基础价值</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footer-note">以上为无真实业务数据情况下的相对优先级判断，正式放量前必须通过用户研究与行为数据验证。</p>
+        </section>
+
+        <section id="why-now">
+          <h2><span class="num">08</span>为什么值得进入观看过程</h2>
+          <div class="principles">
+            <div class="principle"><strong>问题发生在现场</strong><span>需求依赖当前画面、台词或观看进度。</span></div>
+            <div class="principle"><strong>影响后续理解</strong><span>如果不解决，信息缺口可能持续扩大。</span></div>
+            <div class="principle"><strong>现有路径成本高</strong><span>用户需要反复回看、拖动或离开播放器。</span></div>
+            <div class="principle"><strong>AI 具备上下文优势</strong><span>画面、字幕、人物、前情和进度可同时参与判断。</span></div>
+            <div class="principle"><strong>收益高于打扰</strong><span>帮助必须比暂停、遮挡和注意力切换更有价值。</span></div>
+            <div class="principle"><strong>能力基础已存在</strong><span>重点从新增模型能力转向重构现有服务体验。</span></div>
+          </div>
+        </section>
+
+        <section id="signals">
+          <h2><span class="num">09</span>问题与价值验证信号</h2>
+          <h3>行为信号：发现候选需求</h3>
+          <p>关键人物或线索出现后的暂停、重复回看、相邻时间点多次拖动、暂停后打开人物页或搜索、长间隔后的续播。这些行为只能说明“可能困惑”，不能直接触发完整答案。</p>
+
+          <h3>现有 AI 漏斗：定位交互损耗</h3>
+          <p>入口曝光到打开、打开到提交、输入中放弃、组织问题耗时、问题重述、答案生成前关闭、有用性反馈、回答后恢复播放时间，以及使用 AI 后是否继续回看或站外搜索。</p>
+
+          <h3>结果信号：证明升级产生价值</h3>
+          <p>与现有 AI 对照，检查用户是否更快获得有效帮助、减少上下文描述、正确理解人物或事件、更快恢复播放，并且没有增加关闭、退出和剧透投诉。</p>
+
+          <p class="risk-note"><strong>不能用点击率或观看时长单独证明价值。</strong>点击可能来自新奇感，观看时长增加也可能代表 AI 让观看变得更低效。</p>
+        </section>
+
+        <section id="positioning">
+          <h2><span class="num">10</span>产品定位</h2>
+          <p class="statement"><strong>面向观看复杂连续剧情内容的用户，</strong>将平台现有主动问答式 AI 升级为进度感知的观看内剧情助手，在用户出现理解断点时，基于当前画面、字幕和已观看剧情提供无剧透、低打扰、可追问的上下文帮助。</p>
+
+          <h3>用户价值主张</h3>
+          <p>不用离开播放器，不用重新描述正在发生什么，不用承担搜索剧透风险，就能恢复理解并继续观看。</p>
+
+          <div class="shift" aria-label="产品形态转变">
+            <div>
+              <h3>当前 AI</h3>
+              <p>用户主动寻找入口、组织问题；问答与播放相互分离。</p>
+            </div>
+            <div class="arrow" aria-hidden="true">→</div>
+            <div>
+              <h3>目标产品</h3>
+              <p>AI 在合适状态承接需求，自动携带上下文，并帮助用户回到播放。</p>
+            </div>
+          </div>
+
+          <h3>介入原则</h3>
+          <div class="principles">
+            <div class="principle"><strong>懂此刻</strong><span>理解当前画面、字幕和播放进度。</span></div>
+            <div class="principle"><strong>不剧透</strong><span>只使用用户已经观看过的剧情。</span></div>
+            <div class="principle"><strong>低打扰</strong><span>正常播放时保持安静。</span></div>
+            <div class="principle"><strong>用户控制</strong><span>可提示入口，完整内容由用户主动展开。</span></div>
+            <div class="principle"><strong>可相信</strong><span>区分事实、推测和尚未揭晓。</span></div>
+            <div class="principle"><strong>能返回</strong><span>帮助结束后从原位置继续播放。</span></div>
+          </div>
+        </section>
+
+        <section id="value">
+          <h2><span class="num">11</span>产品价值</h2>
+          <div class="value-grid">
+            <article class="value-card">
+              <h3>用户价值</h3>
+              <p>降低表达成本，减少回看与站外搜索，规避剧透，并在当前进度下更快恢复理解。</p>
+            </article>
+            <article class="value-card">
+              <h3>平台价值</h3>
+              <p>提高现有 AI 与真实观看场景的匹配度，激活已有能力，并降低复杂内容的理解门槛。</p>
+            </article>
+            <article class="value-card">
+              <h3>核心差异</h3>
+              <p>AI 知道用户此刻看到了什么、此前看过什么，以及哪些内容还不能告诉用户。</p>
+            </article>
+          </div>
+          <p class="footer-note">平台收益目前属于合理推断，仍需实验验证，不能表述为已经实现的业务结果。</p>
+        </section>
+
+        <section id="boundary">
+          <h2><span class="num">12</span>产品边界</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">基础版本解决</th><th scope="col">基础版本不解决</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td data-label="基础版本解决">当前理解所需的已发生信息；人物、事件、台词和时间线的事实说明；有限追问；帮助结束后的播放承接。</td>
+                  <td data-label="基础版本不解决">播放全程自动讲解；未经同意频繁弹出；当前进度之后的剧情；将主观解读包装成事实。</td>
+                </tr>
+                <tr>
+                  <td data-label="基础版本解决">AI 主动准备上下文并提供低打扰入口，由用户决定是否展开。</td>
+                  <td data-label="基础版本不解决">角色形象或声音二次生成；角色扮演、高频情感陪伴；完整社区、推荐或影视百科。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>传统聊天框不应成为主界面。</strong>输入框可以作为兜底，主要体验应由观看状态、情境入口和互动卡片共同承接。</p>
+        </section>
+
+        <section id="success">
+          <h2><span class="num">13</span>成功标准</h2>
+          <ol>
+            <li>用户确实存在影响连续观看的剧情理解断点。</li>
+            <li>现有主动问答流程存在可测量的交互损耗。</li>
+            <li>观看内方案比现有 AI 更快、更少描述地解决问题。</li>
+            <li>AI 回答准确，并严格控制在当前观看进度。</li>
+            <li>用户获得帮助后能够顺畅返回播放。</li>
+            <li>AI 没有明显增加遮挡、打断、退出或剧透风险。</li>
+          </ol>
+          <p class="statement">只有当理解改善与交互效率提升成立，同时沉浸体验没有受到明显伤害，产品才值得扩大覆盖范围。</p>
+        </section>
+
+        <section id="open">
+          <h2><span class="num">14</span>待确认项</h2>
+          <ul>
+            <li>现有 AI 的真实入口、提问步骤和返回播放路径。</li>
+            <li>当前 AI 是否自动获得剧名、集数、字幕、画面和时间点。</li>
+            <li>当前答案的长度、结构、依据和剧透控制方式。</li>
+            <li>现有 AI 的曝光、使用、放弃和负反馈数据。</li>
+            <li>人物及前情遗忘是否确实是影响最大的理解断点。</li>
+            <li>用户更偏好快捷问题、文字输入还是语音输入。</li>
+            <li>回答长度、提示频率、响应时间及错误解释的容忍边界。</li>
+          </ul>
+          <p class="risk-note">在获得真实用户研究、现有产品实测和行为数据前，本文的场景频率、优先级和平台收益均属于待验证判断。</p>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
